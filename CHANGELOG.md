@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2026-10-18
+
+### Fixed
+
+- `subprocess.run` now passes `encoding="utf-8"` at all six call sites in
+  `search.py`. Previously `text=True` without an explicit encoding made Python
+  decode `gh`'s UTF-8 output with the platform default codec, so on Windows
+  (`cp1252`) any byte outside that codec failed the decode, `stdout` came back
+  `None`, and `json.loads(None)` raised a raw `TypeError` instead of returning
+  search results. Decoding now matches what `gh` emits on every platform (#106).
+
 ## [0.1.1] - 2026-10-11
 
 24 commits of hardening since 0.1.0. No new commands; the focus was making the
