@@ -13,6 +13,7 @@ from rich.table import Table
 from rich.text import Text
 
 from gfi.search import GitHubSearcher, Issue
+from gfi.version import __version__
 
 console = Console()
 # Human-facing notices (spinners, "no results" prose) go here whenever stdout
@@ -115,7 +116,14 @@ def _truncate(text: str, length: int = 60) -> Text:
 
 
 @click.group()
-@click.version_option(package_name="gfi")
+# Pin the version to this package's own __version__ rather than letting click
+# read the installed distribution metadata. `package_name="gfi"` made click call
+# importlib.metadata.version("gfi"), which returns the first dist-info/egg-info
+# on the path -- in a checkout that is a stale src/gfi.egg-info from an older
+# release, so `gfi --version` and `gh gfi --version` printed 0.1.0 while the
+# code was 0.1.2. The version lives in src/gfi/version.py, which pyproject.toml
+# and CHANGELOG.md track.
+@click.version_option(version=__version__)
 def cli():
     """gfi — Good First Issue finder for GitHub contributors."""
     pass
