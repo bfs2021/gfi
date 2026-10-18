@@ -144,6 +144,28 @@ class TestGetLanguage:
             assert searcher._get_language("owner/repo") == ""
 
 
+class TestRunGh:
+    @pytest.fixture
+    def searcher(self, tmp_path):
+        return GitHubSearcher(cache_dir=tmp_path / "cache")
+
+    @patch("gfi.search.subprocess.run")
+    def test_returns_empty_on_none_stdout(self, mock_run, searcher):
+        mock_run.return_value = _gh_result(stdout=None)
+
+        result = searcher._run_gh(["--json", "number"])
+
+        assert result == {}
+
+    @patch("gfi.search.subprocess.run")
+    def test_returns_empty_list_on_none_stdout(self, mock_run, searcher):
+        mock_run.return_value = _gh_result(stdout=None)
+
+        result = searcher._run_gh(["search", "issues"])
+
+        assert result == []
+
+
 class TestSearchDispatch:
     @pytest.fixture
     def searcher(self, tmp_path):
@@ -340,6 +362,18 @@ class TestSearchRepo:
 
         assert results == []
 
+    @patch("gfi.search.subprocess.run")
+    def test_returns_nothing_on_none_stdout(self, mock_run, searcher):
+        mock_run.return_value = _gh_result(stdout=None)
+
+        results = list(searcher._search_repo(
+            "owner/repo", "query", "good first issue", "open", None,
+            None, True, None,
+            max_age_days=None, repo_max_age_days=None, limit=20,
+        ))
+
+        assert results == []
+
 
 class TestSearchGlobal:
     @pytest.fixture
@@ -511,6 +545,17 @@ class TestSearchGlobal:
                 "query", "good first issue", "open", None, None, True, None,
                 max_age_days=None, repo_max_age_days=None, limit=20,
             ))
+
+        assert results == []
+
+    @patch("gfi.search.subprocess.run")
+    def test_returns_nothing_on_none_stdout(self, mock_run, searcher):
+        mock_run.return_value = _gh_result(stdout=None)
+
+        results = list(searcher._search_global(
+            "query", "good first issue", "open", None, None, True, None,
+            max_age_days=None, repo_max_age_days=None, limit=20,
+        ))
 
         assert results == []
 

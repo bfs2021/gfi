@@ -111,6 +111,8 @@ class GitHubSearcher:
             )
             if result.returncode != 0:
                 return {} if "--json" in args else []
+            if result.stdout is None:
+                return {} if "--json" in args else []
             return json.loads(result.stdout)
         except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
             return {} if "--json" in args else []
@@ -263,6 +265,8 @@ class GitHubSearcher:
             )
             if result.returncode != 0:
                 return
+            if result.stdout is None:
+                return
             items = json.loads(result.stdout)
         except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
             return
@@ -358,6 +362,8 @@ class GitHubSearcher:
                 cmd, capture_output=True, text=True, encoding="utf-8", timeout=30
             )
             if result.returncode != 0:
+                return
+            if result.stdout is None:
                 return
             items = json.loads(result.stdout)
         except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
