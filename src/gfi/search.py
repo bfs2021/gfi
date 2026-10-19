@@ -229,8 +229,17 @@ class GitHubSearcher:
         stars = self._get_stars(repo)
         if stars_min and stars < stars_min:
             return
-        if language and self._get_language(repo).casefold() != language.casefold():
+
+        # Cache repo metadata once per repo. Language and push date are
+        # constant for a given repo; looking them up inside the per-issue
+        # loop produced N identical API calls for N issues (#109).
+        repo_language = self._get_language(repo)
+        if language and repo_language.casefold() != language.casefold():
             return
+
+        repo_push_date = (
+            self._get_repo_push_date(repo) if repo_max_age_days is not None else None
+        )
 
         # Build search query - quote label/user values so spaces and quotes
         # inside them are treated as data rather than query syntax.
@@ -285,7 +294,7 @@ class GitHubSearcher:
                 created_at=item.get("createdAt", ""),
                 updated_at=item.get("updatedAt", ""),
                 body=(item.get("body") or "")[:500],
-                language=self._get_language(repo),
+                language=repo_language,
                 stars=stars,
                 comments=item.get("commentsCount", 0),
             )
@@ -301,7 +310,7 @@ class GitHubSearcher:
 
             # Filter by repo activity
             if repo_max_age_days is not None:
-                push_date = self._get_repo_push_date(repo)
+                push_date = repo_push_date
                 if push_date is not None:
                     days_since_push = (datetime.now(push_date.tzinfo) - push_date).days
                     if days_since_push > repo_max_age_days:
