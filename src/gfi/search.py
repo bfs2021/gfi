@@ -90,9 +90,11 @@ class GitHubSearcher:
     def _load_seen(self) -> dict[str, dict]:
         if self.seen_file.exists():
             try:
-                return json.loads(self.seen_file.read_text())
+                data = json.loads(self.seen_file.read_text())
             except (json.JSONDecodeError, TypeError):
-                pass
+                return {}
+            if isinstance(data, dict):
+                return data
         return {}
 
     def _save_seen(self) -> None:

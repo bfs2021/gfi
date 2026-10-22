@@ -56,6 +56,22 @@ class TestGitHubSearcher:
     def test_load_seen_empty(self, searcher):
         assert len(searcher._seen) == 0
 
+    def test_load_seen_null_json(self, tmp_path):
+        cache = tmp_path / "cache"
+        cache.mkdir()
+        (cache / "seen.json").write_text("null")
+        searcher = GitHubSearcher(cache_dir=cache)
+        assert searcher._seen == {}
+        assert list(searcher._seen.items()) == []
+
+    def test_load_seen_array_json(self, tmp_path):
+        cache = tmp_path / "cache"
+        cache.mkdir()
+        (cache / "seen.json").write_text("[1, 2]")
+        searcher = GitHubSearcher(cache_dir=cache)
+        assert searcher._seen == {}
+        assert list(searcher._seen.items()) == []
+
     def test_mark_seen(self, searcher):
         issue = Issue(number=1, title="test", repo="a/b", url="", state="open")
         searcher.mark_seen(issue)
