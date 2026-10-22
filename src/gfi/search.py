@@ -144,6 +144,8 @@ class GitHubSearcher:
             )
             if result.returncode == 0:
                 lang = result.stdout.strip().strip('"')
+                if lang in ("", "null", "None"):
+                    return ""
                 return lang
         except (subprocess.TimeoutExpired, FileNotFoundError):
             pass

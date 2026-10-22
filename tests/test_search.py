@@ -149,6 +149,12 @@ class TestGetLanguage:
         assert "repos/owner/repo" in cmd
 
     @patch("gfi.search.subprocess.run")
+    def test_returns_empty_for_null_language(self, mock_run, searcher):
+        mock_run.return_value = _gh_result(stdout="null\n")
+
+        assert searcher._get_language("owner/repo") == ""
+
+    @patch("gfi.search.subprocess.run")
     def test_returns_empty_on_nonzero_exit(self, mock_run, searcher):
         mock_run.return_value = _gh_result(returncode=1, stdout="")
 
